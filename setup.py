@@ -7,22 +7,23 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bbw",
-    version="0.1",
+    version="0.1.1",
     author="Renat Shigapov, Philipp Zumstein, Jan Kamlah, Lars Oberlaender, Joerg Mechnich, Irene Schumm",
     license="MIT",
     description="Library for semantic annotation of tabular data with the Wikidata knowledge graph",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/UB-Mannheim/bbw",
-    python_requires=">=3.6",
     install_requires=[
-	ftfy>=5.8,
-	tqdm>=4.48.0,
-	pandas>=1.0.5,
-	requests>=2.23.0,
-	numpy>=1.18.4,
-	beautifulsoup4>=4.9.3,
-    ]
+	"ftfy>=5.8",
+	"tqdm>=4.48.0",
+	"pandas>=1.0.5",
+	"streamlit>=0.70.0",
+	"requests>=2.23.0",
+	"numpy>=1.18.4",
+	"beautifulsoup4>=4.9.3",
+    ],
+    scripts=['bbw_cli.py','bbw_gui.py','bbw_parallel.sh'],
     packages=setuptools.find_packages(),
     classifiers=[
 	"License :: OSI Approved :: MIT License",
