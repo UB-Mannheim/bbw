@@ -8,6 +8,7 @@ import argparse
 from tqdm import tqdm
 import time
 import os
+import sys
 
 # Specify CLI
 parser = argparse.ArgumentParser()
@@ -23,9 +24,13 @@ nround = str(2)
 nsubmission = str(42)
 
 # Load the target data
-target_cpa = pd.read_csv(path+f"target/CPA_Round{nround}_Targets.csv", names=['file', 'column0', 'column'], dtype=object)
-target_cta = pd.read_csv(path+f"target/CTA_Round{nround}_Targets.csv", names=['file', 'column'], dtype=object)
-target_cea = pd.read_csv(path+f"target/CEA_Round{nround}_Targets.csv", names=['file', 'row', 'column'], dtype=object)
+try:
+    target_cpa = pd.read_csv(path+f"target/CPA_Round{nround}_Targets.csv", names=['file', 'column0', 'column'], dtype=object)
+    target_cta = pd.read_csv(path+f"target/CTA_Round{nround}_Targets.csv", names=['file', 'column'], dtype=object)
+    target_cea = pd.read_csv(path+f"target/CEA_Round{nround}_Targets.csv", names=['file', 'row', 'column'], dtype=object)
+except FileNotFoundError as e:
+    print(e)
+    sys.exit(1)
 
 # Create a list of filenames for matching in CPA, CEA and CTA tasks
 filelist = target_cpa.file.to_list() + target_cea.file.to_list() + target_cta.file.to_list()
