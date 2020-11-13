@@ -1,3 +1,6 @@
 .DS_Store
 bbw/.DS_Store
 utils/.DS_Store
+bbw.egg-info/
+build/
+dist/
