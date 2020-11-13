@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bbw",
-    version="0.1.1",
+    version="0.1.0",
     author="Renat Shigapov, Philipp Zumstein, Jan Kamlah, Lars Oberlaender, Joerg Mechnich, Irene Schumm",
     license="MIT",
     description="Library for semantic annotation of tabular data with the Wikidata knowledge graph",
