@@ -16,7 +16,7 @@
 
 ### Import library
 ```python
-import bbw.bbw as bbw
+from bbw import bbw
 ```
 
 The easiest way to annotate the dataframe Y is:
