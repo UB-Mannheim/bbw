@@ -1,4 +1,5 @@
 # bbw
+[![PyPI version](https://badge.fury.io/py/bbw.svg)](https://badge.fury.io/py/bbw)
 
 * Annotates tabular data with the entities, types and properties in [Wikidata](https://www.wikidata.org).
 * Easy to use: bbw.annotate().
