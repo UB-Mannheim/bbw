@@ -1093,7 +1093,7 @@ def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=Non
     return [bbw_cpa_sub, bbw_cea_sub, bbw_cta_sub]
 
 
-def annotate(filecsv, filename):
+def annotate(filecsv, filename=''):
     """
     Parameters
     ----------
