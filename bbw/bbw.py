@@ -15,6 +15,7 @@ import ftfy
 import numpy as np
 import random
 import string
+import os
 
 
 def get_parallel(a, n):
@@ -439,7 +440,7 @@ def get_searx_bestname(name):
         A few best suggestions returned by the Searx metasearch engine.
     """
     name_cleaned = name.replace('!', ' ').replace('#', ' ').replace(':-', ' -')
-    url = 'http://localhost:80/'
+    url = os.getenv("BBW_SEARX_URL", "http://localhost:80")
     engines = "!yh !ddd !eto !bi !ew !et !wb !wq !ws !wt !wv !wy !tl !qw !mjk !nvr !wp !cc !wd !ddg !sp !yn !dc "
     data = {"q": engines + name_cleaned, "format": "json"}
     try:
