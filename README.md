@@ -1,6 +1,6 @@
 # bbw
 [![PyPI version](https://badge.fury.io/py/bbw.svg)](https://badge.fury.io/py/bbw)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/UB-Mannheim/bbw/master?filepath=bbw.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/UB-Mannheim/bbw/main?filepath=bbw.ipynb)
 
 * Annotates tabular data with the entities, types and properties in [Wikidata](https://www.wikidata.org).
 * Easy to use: bbw.annotate().
