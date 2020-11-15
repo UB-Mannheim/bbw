@@ -8,7 +8,6 @@ from collections import Counter
 import re
 import difflib
 from datetime import date
-import bs4
 from bs4 import BeautifulSoup
 import time
 import ftfy
@@ -360,7 +359,7 @@ def get_title(url):
     """
     try:
         r = requests.get(url, headers={'User-Agent': random_user_agent()}, timeout=1)
-        title = bs4.BeautifulSoup(r.text, features="lxml").title.text
+        title = BeautifulSoup(r.text, features="lxml").title.text
         title = title.replace(' - Wikidata', '')
     except:
         title = None
