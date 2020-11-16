@@ -486,6 +486,9 @@ def get_searx_bestname(name):
         if len(results.get('results')) > 0:
             for i, result in enumerate(results.get('results')):
                 url = result.get('url')
+                parsed_url=result.get('parsed_url')
+                if len(parsed_url) > 1:
+                    hostname = parsed_url[1]
                 raw_title = result.get('title')
                 if i == 1:
                     bestname.append(
@@ -501,16 +504,15 @@ def get_searx_bestname(name):
                         bestname.append(
                             title.split(" - ")[0].split(" ? ")[0].split(" ? ")[0].split(' \u2014 ')[0].split(
                                 ' \u2013 ')[0].replace('Talk:', '').replace('Category:', ''))
-                if "wikimedia.org" in url:
-                    title = get_wikimedia2wikidata_title(url)
-                    if title:
-                        medianame.append(
-                            title.split(" - ")[0].split(" ? ")[0].split(" ? ")[0].split(' \u2014 ')[0].split(
-                                ' \u2013 ')[0])
+                if hostname:
+                    if hostname.endswith('.wikimedia.org'):
+                        title = get_wikimedia2wikidata_title(url)
+                        if title:
+                            medianame.append(
+                                title.split(" - ")[0].split(" ? ")[0].split(" ? ")[0].split(' \u2014 ')[0].split(
+                                    ' \u2013 ')[0])
                 if "dict" in url:
                     bestname.append(raw_title.split(' : ')[0].split(' | ')[0])
-                if "doi.org" in url or "nature.com" in url or "pubchem" in url:
-                    bestname.append(raw_title.split(' | ')[0])
                 raw_match = difflib.get_close_matches(name, [
                     raw_title.replace(' ...', '').replace(' …', '').split(' | ')[0].split(" - ")[0].split(' \u2014 ')[
                         0].split(' \u2013 ')[0]], n=1, cutoff=0.7)
