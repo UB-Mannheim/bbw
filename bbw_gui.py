@@ -69,9 +69,9 @@ if __name__ == "__main__":
         if uploaded_file:
             try:
                 [csvfile, filename, rawtable] = process_data(uploaded_file)
-            except:
+            except Exception:
                 st.info('Something went wrong: bbw is unable to process the input '+filename)
             try:
                 bbwtable = annotate_data(csvfile, filename)
-            except:
+            except Exception:
                 st.info('Something went wrong: bbw is unable to annotate the input '+filename)        

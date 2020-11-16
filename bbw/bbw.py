@@ -92,7 +92,7 @@ def get_SPARQL_dataframe(name, url="https://query.wikidata.org/sparql", extra=''
             output = pd.DataFrame(results, dtype=str)
         else:
             output = None
-    except:
+    except Exception:
         output = None
 
     return output
@@ -140,7 +140,7 @@ def get_SPARQL_dataframe_item(name, url="https://query.wikidata.org/sparql"):
             output = pd.DataFrame(results, dtype=str)
         else:
             output = None
-    except:
+    except Exception:
         output = None
 
     return output
@@ -190,7 +190,7 @@ def get_SPARQL_dataframe_prop(prop, value, url="https://query.wikidata.org/sparq
             output = pd.DataFrame(results, dtype=str)
         else:
             output = None
-    except:
+    except Exception:
         output = None
 
     return output
@@ -223,7 +223,7 @@ def get_SPARQL_dataframe_type(name, datatype, url="https://query.wikidata.org/sp
             output = pd.DataFrame(results, dtype=str)
         else:
             output = None
-    except:
+    except Exception:
         output = None
 
     return output
@@ -254,7 +254,7 @@ def get_SPARQL_dataframe_type2(datatype, url="https://query.wikidata.org/sparql"
             output = pd.DataFrame(results, dtype=str)
         else:
             output = None
-    except:
+    except Exception:
         output = None
 
     return output
@@ -279,7 +279,7 @@ def get_openrefine_bestname(name):
         r = requests.get(url=url, params=params, headers={'User-Agent': random_user_agent()}, timeout=1)
         results = r.json().get('result')
         bestname = results[0].get('name')
-    except:
+    except Exception:
         bestname = None
     return bestname
 
@@ -317,7 +317,7 @@ def get_wikidata_URL(name):
                         URL = 'http://www.wikidata.org/entity/' + bestname
         if not URL:
             URL = None
-    except:
+    except Exception:
         URL = None
     return URL
 
@@ -341,7 +341,7 @@ def get_wikidata_title(url):
                   "ids": url.split('/')[-1]}
         r = requests.get(url, params=params, headers={'User-Agent': random_user_agent()}, timeout=5).json()
         title = r.get('entities').get(url.split('/')[-1]).get('labels').get('en').get('value')
-    except:
+    except Exception:
         title = ''
     return title
 
@@ -361,7 +361,7 @@ def get_title(url):
         r = requests.get(url, headers={'User-Agent': random_user_agent()}, timeout=1)
         title = BeautifulSoup(r.text, features="lxml").title.text
         title = title.replace(' - Wikidata', '')
-    except:
+    except Exception:
         title = None
     return title
 
@@ -389,7 +389,7 @@ def get_wikimedia2wikidata_title(wikimedia_url):
         wikidata_url = soup.find('a', title="Edit infobox data on Wikidata").get('href')
         # time.sleep(0.25)
         title = get_title(wikidata_url)
-    except:
+    except Exception:
         title = None
     return title
 
@@ -422,7 +422,7 @@ def get_wikipedia2wikidata_title(wikipedia_title):
             # bestname = [k for k in pages.values()][0].get('title')
             wikidataID = [k for k in pages.values()][0].get('pageprops').get('wikibase_item')
             bestname = get_title("https://www.wikidata.org/wiki/" + wikidataID).replace(' - Wikidata', '')
-    except:
+    except Exception:
         bestname = None
     return bestname
 
@@ -466,7 +466,7 @@ def get_searx_bestname(name):
                 if results2:
                     if len(results2.get('infoboxes')) > 0:
                         bestname.extend([x.get('infobox') for x in results2.get('infoboxes')])
-            except:
+            except Exception:
                 pass
         # Process corrections
         if len(results.get('corrections')) > 0:
@@ -479,7 +479,7 @@ def get_searx_bestname(name):
                         if results3:
                             if len(results3.get('infoboxes')) > 0:
                                 bestname.extend([x.get('infobox') for x in results3.get('infoboxes')])
-                    except:
+                    except Exception:
                         pass
                 bestname.extend(corrections)
         # Process search results
@@ -544,7 +544,7 @@ def get_searx_bestname(name):
             bestname = list(set([best for best in bestname if best != name]))
             if len(bestname) == 0:
                 bestname = None
-    except:
+    except Exception:
         bestname = None
     return bestname
 
@@ -600,7 +600,7 @@ def get_common_class(classes, url="https://query.wikidata.org/sparql"):
                          headers={'User-Agent': random_user_agent()})
         results = r.json().get('results').get('bindings')
         output = results[0].get('super').get('value')
-    except:
+    except Exception:
         output = classes[0]
 
     return output
@@ -804,7 +804,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                             if value:
                                 cea_list.append(
                                     [filename, row, col, value, valueType, 'Step 2: ' + how_matched, proper_name])
-                        except:
+                        except Exception:
                             pass
             else:
                 nomatch.append([filename, row, name_in_data, proper_name])
@@ -859,9 +859,9 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                                 cea_list.append([filename, nrow, 0, item, itemType, 'Step 3', bestname])
                             if value:
                                 cea_list.append([filename, nrow, col, value, valueType, 'Step 3', bestname])
-                        except:
+                        except Exception:
                             pass
-                except:
+                except Exception:
                     pass
 
     # STEP 4 in the workflow
@@ -903,7 +903,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                                 cea_list.append([filename, row, 0, item, itemType, 'Step 4', bestname])
                             if value:
                                 cea_list.append([filename, row, col, value, valueType, 'Step 4', bestname])
-                    except:
+                    except Exception:
                         pass
 
     # MATCHING via column types in Steps 5 and 6
@@ -931,7 +931,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                             cea_list.append(
                                 [filename, nrow, ncol, item, ["http://www.wikidata.org/entity/" + column_type],
                                  'Step 5', list(set(WDtype.itemLabel.to_list()))])
-                except:
+                except Exception:
                     pass
 
     # STEP 6 in the workflow
@@ -999,7 +999,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                                         if value:
                                             cea_list.append([filename, row, col, value, valueType, 'Step 6',
                                                              list(set(df_value.itemLabel.to_list()))])
-                                    except:
+                                    except Exception:
                                         pass
                         # Take the most possible item for this row and remove the properties which are not taken from this item
                         if len(this_row_item) > 0:
@@ -1008,7 +1008,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
                                 if len(cpa_row[4]) > 0:
                                     cpa_list[cpa_row_ind + i][4] = [prop for prop in cpa_row[4] if
                                                                     prop[1] == this_row_item]
-                except:
+                except Exception:
                     pass
     return [cpa_list, cea_list, nomatch]
 
@@ -1080,17 +1080,17 @@ def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=Non
         try:
             print('CEA', round(stat_cea_matched / stat_cea_target, 4), stat_cea_matched, stat_cea_target,
                   stat_cea_target - stat_cea_matched, sep='\t')
-        except:
+        except Exception:
             pass
         try:
             print('CTA', round(stat_cta_matched / stat_cta_target, 4), stat_cta_matched, stat_cta_target,
                   stat_cta_target - stat_cta_matched, sep='\t')
-        except:
+        except Exception:
             pass
         try:
             print('CPA', round(stat_cpa_matched / stat_cpa_target, 4), stat_cpa_matched, stat_cpa_target,
                   stat_cpa_target - stat_cpa_matched, sep='\t')
-        except:
+        except Exception:
             pass
     return [bbw_cpa_sub, bbw_cea_sub, bbw_cta_sub]
 
@@ -1136,7 +1136,7 @@ def annotate(filecsv, filename=''):
                         labeltable.loc[row, column] = label
                         bbwtable.loc[row, column] = '<a target="_blank" href="' + link + '">' + label + '</a>'
 
-                except:
+                except Exception:
                     pass
     if not cpa_sub.empty:
         for column in set(cpa_sub.column.to_list()) or []:
@@ -1146,7 +1146,7 @@ def annotate(filecsv, filename=''):
                 bbwtable.loc['index', column] = '<a target="_blank" href="' + link + '">' + label + '</a>'
                 urltable.loc['index', column] = link
                 labeltable.loc['index', column] = label
-            except:
+            except Exception:
                 pass
     if not cta_sub.empty:
         for column in set(cta_sub.column.to_list()) or []:
@@ -1156,7 +1156,7 @@ def annotate(filecsv, filename=''):
                 bbwtable.loc['type', column] = '<a target="_blank" href="' + link + '">' + label + '</a>'
                 urltable.loc['type', column] = link
                 labeltable.loc['type', column] = label
-            except:
+            except Exception:
                 pass
     bbwtable = bbwtable.rename(index={'index': 'property'})
     bbwtable = bbwtable.replace({np.nan: ''})
