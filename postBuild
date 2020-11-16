@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-sed -i 's|http://localhost:80/|https://searx.ir|g' bbw/bbw.py
