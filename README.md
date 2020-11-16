@@ -1,4 +1,4 @@
-# bbw
+# bbw (boosted by wiki)
 [![PyPI version](https://badge.fury.io/py/bbw.svg)](https://badge.fury.io/py/bbw)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/UB-Mannheim/bbw/main?filepath=bbw.ipynb)
 
@@ -25,7 +25,14 @@ The easiest way to annotate the dataframe Y is:
 ```python
 [web_table, url_table, label_table, cpa, cea, cta] = bbw.annotate(Y)
 ```
-It returns a list of six dataframes. The first three dataframes contain annotations in the form of HTML-links, URLs and labels of the entities in Wikidata correspondingly. The dataframes have two more rows than Y. These two rows contain annotations for types and properties. The last three dataframes contain the annotations in the format required by [SemTab2020](https://www.cs.ox.ac.uk/isg/challenges/sem-tab/2020) challenge.
+It returns a list of six dataframes. The first three dataframes contain the annotations in the form of HTML-links, URLs and labels of the entities in Wikidata correspondingly. The dataframes have two more rows than Y. These two rows contain the annotations for types and properties. The last three dataframes contain the annotations in the format required by [SemTab2020](https://www.cs.ox.ac.uk/isg/challenges/sem-tab/2020) challenge.
+
+The fastest way to annotate the dataframe Y is:
+```python
+[cpa_list, cea_list, nomatch] = bbw.contextual_matching(bbw.preprocessing(Y))
+[cpa, cea, cta] = bbw.postprocessing(cpa_list, cea_list)
+```
+The dataframes ```cpa```, ```cea``` and ```cta``` contain the annotations in [SemTab2020](https://www.cs.ox.ac.uk/isg/challenges/sem-tab/2020)-format. The list ```nomatch``` contains the labels which are not matched. The unprocessed and possibly non-unique annotations are in the lists ```cpa_list``` and ```cea_list```.
 
 ### GUI
 
@@ -54,6 +61,23 @@ If you need to annotate hundreds or thousands of tables, use the script with GNU
 You can use pip to install bbw:
 ```
 pip install bbw
+```
+
+The latest version can be installed directly from github:
+```
+pip install git+https://github.com/UB-Mannheim/bbw
+```
+
+You can test bbw in a virtual environment:
+```
+pip install virtualenv
+virtualenv testing_bbw
+source testing_bbw/bin/activate
+python
+from bbw import bbw
+[web_table, url_table, label_table, cpa, cea, cta] = bbw.annotate(bbw.pd.DataFrame([['0','1'],['Mannheim','Rhine']]))
+print(web_table)
+deactivate
 ```
 
 Install also [SearX](https://github.com/searx/searx), because bbw meta-lookups through it. 
