@@ -748,7 +748,7 @@ def preprocessing(filecsv):
     return filecsv
 
 
-def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
+def contextual_matching(filecsv, filename='', cpa_list=[], cea_list=[], nomatch=[],
                         step3=False, step4=False, step5=True, step6=True):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
@@ -1013,7 +1013,7 @@ def contextual_matching(filename, filecsv, cpa_list, cea_list, nomatch,
     return [cpa_list, cea_list, nomatch]
 
 
-def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=None, target_cta=None, gui=False):
+def postprocessing(cpa_list, cea_list, filelist=None, target_cpa=None, target_cea=None, target_cta=None, gui=False):
     """Postprocessing is performed for input lists cpa_list and cea_list.
     The target-dataframes are optional. If they are given,
     only target-annotations are returned in """
@@ -1029,7 +1029,7 @@ def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=Non
     bbw_cpa_sub['property'] = bbw_cpa_sub['property'].apply(lambda x: None if len(x) == 0 else x[0][0])
     bbw_cpa_sub = bbw_cpa_sub.dropna()
     # Keep only the target columns for CPA-challenge
-    if isinstance(target_cpa, pd.DataFrame):
+    if filelist and isinstance(target_cpa, pd.DataFrame):
         bbw_cpa_sub = pd.merge(
             target_cpa[target_cpa.file.isin(filelist)].astype({"file": str, "column0": int, "column": int}),
             bbw_cpa_sub.astype({"file": str, "column0": int, "column": int, "property": str}),
@@ -1044,7 +1044,7 @@ def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=Non
     bbw_cea_sub['item'] = bbw_cea_sub['item'].apply(lambda x: None if len(x) == 0 else x[0][0])
     bbw_cea_sub = bbw_cea_sub.dropna()
     # Keep only the target columns for CEA-challenge
-    if isinstance(target_cea, pd.DataFrame):
+    if filelist and isinstance(target_cea, pd.DataFrame):
         bbw_cea_sub = pd.merge(
             target_cea[target_cea.file.isin(filelist)].astype({"file": str, "row": int, "column": int}),
             bbw_cea_sub.astype({"file": str, "row": int, "column": int, "item": str}),
@@ -1060,12 +1060,12 @@ def postprocessing(cpa_list, cea_list, filelist, target_cpa=None, target_cea=Non
     bbw_cta_one['itemType'] = bbw_cta_one['itemType'].apply(lambda x: get_one_class(x))
     bbw_cta_sub = bbw_cta_one.dropna()
     # Keep only the target columns for CTA-challenge
-    if isinstance(target_cta, pd.DataFrame):
+    if filelist and isinstance(target_cta, pd.DataFrame):
         bbw_cta_sub = pd.merge(target_cta[target_cta.file.isin(filelist)].astype({"file": str, "column": int}),
                                bbw_cta_sub.astype({"file": str, "column": int, "itemType": str}),
                                on=['file', 'column'], how='inner')
     # Print statistics
-    if not gui:
+    if filelist and not gui:
         stat_cpa_matched = len(bbw_cpa_sub)
         if isinstance(target_cpa, pd.DataFrame):
             stat_cpa_target = len(target_cpa[target_cpa.file.isin(filelist)])
@@ -1119,7 +1119,7 @@ def annotate(filecsv, filename=''):
     filename = filename.replace('.csv', '')
     cpa, cea, nomatch = [], [], []
     filecsv = preprocessing(filecsv)
-    [cpa, cea, nomatch] = contextual_matching(filename, filecsv, cpa, cea, nomatch,
+    [cpa, cea, nomatch] = contextual_matching(filecsv, filename, cpa, cea, nomatch,
                                               step3=False, step4=False, step5=True, step6=True)
     [cpa_sub, cea_sub, cta_sub] = postprocessing(cpa, cea, [filecsv], gui=True)
     bbwtable = filecsv

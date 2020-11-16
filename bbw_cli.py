@@ -45,7 +45,7 @@ try:
         for ind, filename in enumerate(tqdm(filelist)):
             filecsv = pd.read_csv(path+f'tables_round{nround}/'+filename+'.csv', dtype=str, header=None)
             filecsv = preprocessing(filecsv)
-            [cpa, cea, nomatch] = contextual_matching(filename, filecsv, cpa, cea, nomatch, 
+            [cpa, cea, nomatch] = contextual_matching(filecsv, filename, cpa, cea, nomatch, 
                                                       step3=False, step4=False, step5=True, step6=True)
         # Postprocess cpa and cea lists and return the ready-for-submission dataframes
         [cpa_sub, cea_sub, cta_sub] = postprocessing(cpa, cea, filelist, 
