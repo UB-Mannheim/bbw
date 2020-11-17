@@ -1,6 +1,7 @@
 .DS_Store
-bbw/.DS_Store
-utils/.DS_Store
-bbw.egg-info/
-build/
-dist/
+__pycache__
+/bbw.egg-info
+/build
+/dist
+/.eggs
+*~

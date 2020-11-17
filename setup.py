@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 
-import setuptools
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name="bbw",
-    version="0.1.0",
     author="Renat Shigapov, Philipp Zumstein, Jan Kamlah, Lars Oberlaender, Joerg Mechnich, Irene Schumm",
     license="MIT",
     description="Library for semantic annotation of tabular data with the Wikidata knowledge graph",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/UB-Mannheim/bbw",
+    use_scm_version={"local_scheme": "no-local-version"},
+    setup_requires=['setuptools_scm'],
     install_requires=[
 	"ftfy>=5.8",
 	"tqdm>=4.48.0",
@@ -24,7 +25,7 @@ setuptools.setup(
 	"beautifulsoup4>=4.9.3",
     ],
     scripts=['bbw_cli.py','bbw_gui.py','bbw_parallel.sh'],
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     classifiers=[
 	"License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
