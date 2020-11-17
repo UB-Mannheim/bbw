@@ -748,11 +748,23 @@ def preprocessing(filecsv):
     return filecsv
 
 
-def contextual_matching(filecsv, filename='', cpa_list=[], cea_list=[], nomatch=[],
+def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None, default_nomatch=None,
                         step3=False, step4=False, step5=True, step6=True):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
     The lists cpa_list and cea_list with annotations are returned."""
+    if default_cpa:
+        cpa_list = default_cpa
+    else:
+        cpa_list = []
+    if default_cea:
+        cea_list = default_cea
+    else:
+        cea_list = []
+    if default_nomatch:
+        nomatch = default_nomatch
+    else:
+        nomatch = []
     (rows, cols) = filecsv.shape
     nomatch_row = []
     fullymatched_rows = []
