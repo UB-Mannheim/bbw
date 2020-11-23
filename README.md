@@ -44,7 +44,7 @@ streamlit run bbw_gui.py
 
 Open the browser at http://localhost:8501 and choose a CSV-file. The annotation process starts automatically. It outputs the six tables of the annotate function.
 
-Try it out online (no SearX support) with this [binder link](https://mybinder.org/v2/gh/zuphilip/bbw/binder-gui?urlpath=proxy/8501/).
+Try it out online (no SearX support) with this [binder link](https://mybinder.org/v2/gh/UB-Mannheim/bbw/main?urlpath=proxy/8501/).
 
 ### CLI
 
