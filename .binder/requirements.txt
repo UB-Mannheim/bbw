@@ -1,0 +1,9 @@
+ftfy==5.8
+tqdm==4.48.0
+pandas==1.0.5
+streamlit==0.70.0
+requests==2.23.0
+numpy==1.18.4
+beautifulsoup4==4.9.3
+jupyter-server-proxy>=1.2.0
+nbserverproxy>=0.8.8
