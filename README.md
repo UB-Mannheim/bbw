@@ -104,6 +104,8 @@ If you find bbw useful in your work, a proper reference would be:
 }
 ```
 
+[[preprint](https://drive.google.com/file/d/1b5sdsJfhXGGXP-xNj3xVu3ULH5tV4Nap/view)] [[presentation](https://madoc.bib.uni-mannheim.de/57386/)] [[BERD@BW](https://www.berd-bw.de)]
+
 ## SemTab2020
 
 The library was designed, implemented and tested during [SemTab2020](https://www.cs.ox.ac.uk/isg/challenges/sem-tab/2020).
