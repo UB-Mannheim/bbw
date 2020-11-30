@@ -1129,10 +1129,9 @@ def annotate(filecsv, filename=''):
 
     """
     filename = filename.replace('.csv', '')
-    cpa, cea, nomatch = [], [], []
     filecsv = preprocessing(filecsv)
-    [cpa, cea, nomatch] = contextual_matching(filecsv, filename, cpa, cea, nomatch,
-                                              step3=False, step4=False, step5=True, step6=True)
+    [cpa, cea, nomatch] = contextual_matching(filecsv, filename, step3=False,
+                                              step4=False, step5=True, step6=True)
     [cpa_sub, cea_sub, cta_sub] = postprocessing(cpa, cea, [filecsv], gui=True)
     bbwtable = filecsv
     urltable = pd.DataFrame(columns=filecsv.columns)
