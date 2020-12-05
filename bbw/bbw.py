@@ -230,12 +230,18 @@ def get_SPARQL_dataframe_type(name, datatype, url="https://query.wikidata.org/sp
 
 
 def get_SPARQL_dataframe_type2(datatype, url="https://query.wikidata.org/sparql"):
+    if datatype=="Q5":
+        limit = "LIMIT 350000"
+    else:
+        limit = "LIMIT 1000000"
     query = """SELECT REDUCED ?itemLabel WHERE {
-        ?item wdt:P31 wd:""" + datatype + """;
+        hint:Query hint:maxParallel 50 .
+        hint:Query hint:chunkSize 1000 .
+        []  wdt:P31 wd:""" + datatype + """;
               rdfs:label ?itemLabel.
         FILTER (lang(?itemLabel) = "en").
         }
-        LIMIT 1000000"""
+        """+limit
     try:
         r = requests.get(url,
                          params={'format': 'json', 'query': query},
