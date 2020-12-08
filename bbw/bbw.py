@@ -15,6 +15,7 @@ import numpy as np
 import random
 import string
 import os
+import langid
 
 
 def get_parallel(a, n):
@@ -36,7 +37,16 @@ def random_user_agent(agent='bot4bbw-'):
     return random.choice(letters) + agent + random_agent
 
 
-def get_SPARQL_dataframe(name, url="https://query.wikidata.org/sparql", extra=''):
+def get_language(string):
+    """ https://github.com/IBCNServices/CSV2KG/blob/master/csv2kg/util.py#L15-L19 """
+    try:
+        return langid.classify(string)[0]
+    except:
+        return 'en'
+
+
+def get_SPARQL_dataframe(name, language, 
+                         url="https://query.wikidata.org/sparql", extra=''):
     """
     Parameters
     ----------
@@ -52,14 +62,18 @@ def get_SPARQL_dataframe(name, url="https://query.wikidata.org/sparql", extra=''
         Dataframe created from the json-file returned by SPARQL-endpoint.
     """
     name = name.replace('"', '\\\"')
+    if language:
+        lang = language
+    else:
+        lang = get_language(name)
     if extra:
         subquery = """
         ?item rdfs:label ?itemLabel.
-        FILTER (lang(?itemLabel) = "en")."""
+        FILTER (lang(?itemLabel) = """ + '"' + lang + '").'
     else:
         subquery = ""
     query = "SELECT DISTINCT ?item " + extra + """?itemType ?p1 ?p2 ?value ?valueType ?valueLabel ?psvalueLabel WHERE {
-                ?item ?p1 """ + '"' + name + '"' + """@en;
+                ?item ?p1 """ + '"' + name + '"' + "@" + lang + """;
                 ?p2 ?value.""" + subquery + """
                 OPTIONAL { ?item wdt:P31 ?itemType. }
                 OPTIONAL { ?value wdt:P31 ?valueType. }
@@ -68,7 +82,7 @@ def get_SPARQL_dataframe(name, url="https://query.wikidata.org/sparql", extra=''
                         wikibase:statementProperty ?psproperty .
                     ?value ?psproperty ?psvalue .
                 }
-                SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+                SERVICE wikibase:label { bd:serviceParam wikibase:language """+ '"' + lang + '"' + """. }
             }
             LIMIT 100000
             """
@@ -98,7 +112,8 @@ def get_SPARQL_dataframe(name, url="https://query.wikidata.org/sparql", extra=''
     return output
 
 
-def get_SPARQL_dataframe_item(name, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_item(name, language, 
+                              url="https://query.wikidata.org/sparql"):
     """
     Parameters
     ----------
@@ -112,10 +127,14 @@ def get_SPARQL_dataframe_item(name, url="https://query.wikidata.org/sparql"):
         Dataframe created from the json-file returned by SPARQL-endpoint.
     """
     name = name.replace('"', '\\\"')
+    if language:
+        lang = language
+    else:
+        lang = get_language(name)
     query = """SELECT REDUCED ?value ?valueType ?p2 ?item ?itemType ?itemLabel WHERE {
-                ?value rdfs:label """ + '"' + name + '"' + """@en;
+                ?value rdfs:label """ + '"' + name + '"@' + lang + """;
                 wdt:P31 ?valueType.
-                ?item ?p2 [ ?x """ + '"' + name + '"' + """@en].
+                ?item ?p2 [ ?x """ + '"' + name + '"@' + lang + """].
                 ?item wdt:P31 ?itemType.
                 ?item rdfs:label ?itemLabel.
                 FILTER((LANG(?itemLabel)) = "en").
@@ -196,13 +215,16 @@ def get_SPARQL_dataframe_prop(prop, value, url="https://query.wikidata.org/sparq
     return output
 
 
-def get_SPARQL_dataframe_type(name, datatype, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_type(name, datatype, language, url="https://query.wikidata.org/sparql"):
     name = name.replace('"', '\\\"')
-    query = """SELECT REDUCED ?item ?itemLabel WHERE {
-        {?item  rdfs:label """ + '"' + name + '"' + """@en.} UNION
-        {?item  skos:altLabel """ + '"' + name + '"' + """@en.}
+    if language:
+        lang = language
+    else:
+        lang = get_language(name)
+    query = """SELECT DISTINCT ?item ?itemLabel WHERE {
+        {?item  (rdfs:label|skos:altLabel) """ + '"' + name + '"@' + lang + """.}
         ?item wdt:P31 wd:""" + datatype + """.
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+        SERVICE wikibase:label { bd:serviceParam wikibase:language """ + '"' + lang + '"' + """. }
         }
         LIMIT 10000"""
     try:
@@ -229,17 +251,21 @@ def get_SPARQL_dataframe_type(name, datatype, url="https://query.wikidata.org/sp
     return output
 
 
-def get_SPARQL_dataframe_type2(datatype, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_type2(datatype, language, url="https://query.wikidata.org/sparql"):
     if datatype=="Q5":
         limit = "LIMIT 350000"
     else:
         limit = "LIMIT 1000000"
+    if language:
+        lang = language
+    else:
+        lang = "en"
     query = """SELECT REDUCED ?itemLabel WHERE {
         hint:Query hint:maxParallel 50 .
         hint:Query hint:chunkSize 1000 .
         []  wdt:P31 wd:""" + datatype + """;
-              rdfs:label ?itemLabel.
-        FILTER (lang(?itemLabel) = "en").
+              (rdfs:label|skos:altLabel) ?itemLabel.
+        FILTER (lang(?itemLabel) = """ + '"' + lang + '"' + """).
         }
         """+limit
     try:
@@ -632,7 +658,7 @@ def get_one_class(classes):
         return None
 
 
-def lookup(name_in_data, metalookup=True, openrefine=False):
+def lookup(name_in_data, language, metalookup=True, openrefine=False):
     """
     Parameters
     ----------
@@ -650,7 +676,7 @@ def lookup(name_in_data, metalookup=True, openrefine=False):
     how_matched = ''
     proper_name = ''
     # Search entity using WD SPARQL-endpoint
-    WDdf = get_SPARQL_dataframe(name_in_data)
+    WDdf = get_SPARQL_dataframe(name_in_data, language)
     if isinstance(WDdf, pd.DataFrame):
         proper_name = name_in_data
         how_matched = 'SPARQL'  # This means we have found a mention of 'name_in_data' in Wikidata using single SPARQL-query
@@ -665,7 +691,7 @@ def lookup(name_in_data, metalookup=True, openrefine=False):
             if proper_name:
                 test_list = []
                 for proper in proper_name:
-                    e = get_SPARQL_dataframe(proper)
+                    e = get_SPARQL_dataframe(proper, language)
                     if isinstance(e, pd.DataFrame):
                         test_list.append(e)
                 if len(test_list) > 0:
@@ -676,7 +702,7 @@ def lookup(name_in_data, metalookup=True, openrefine=False):
         if not isinstance(WDdf, pd.DataFrame):
             proper_name = get_openrefine_bestname(name_in_data)
             if proper_name:
-                WDdf = get_SPARQL_dataframe(proper_name)
+                WDdf = get_SPARQL_dataframe(proper_name, language)
                 how_matched = 'OpenRefine'  # proper_name is found in Wikidata
     return [WDdf, how_matched, proper_name]
 
@@ -754,11 +780,13 @@ def preprocessing(filecsv):
     return filecsv
 
 
-def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None, default_nomatch=None,
+def contextual_matching(filecsv, filename='', language='',
+                        default_cpa=None, default_cea=None, default_nomatch=None,
                         step3=False, step4=False, step5=True, step6=True):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
     The lists cpa_list and cea_list with annotations are returned."""
+    semtab = False # if True, a property must have URL with www.wikidata.org
     if default_cpa:
         cpa_list = default_cpa
     else:
@@ -781,7 +809,7 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
     if step2:
         for row in range(1, rows):  # We start here from row=1, because there are "col0" and "col1" in row=0
             name_in_data = filecsv.iloc[row, 0]
-            [WDdf, how_matched, proper_name] = lookup(name_in_data)  # Lookup using the value from the 0-column
+            [WDdf, how_matched, proper_name] = lookup(name_in_data, language)  # Lookup using the value from the 0-column
             this_row_item = []
             matches_per_row = 0
             cpa_row_ind = len(cpa_list)
@@ -791,8 +819,11 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
                     for col in range(1, cols):
                         try:
                             df = match(WDdf, filecsv.iloc[row, col])
-                            df_prop = df[(df.p2.str.contains('http://www.wikidata.org/')) & (
-                                ~df.item.str.contains('/statement/'))]
+                            if semtab:
+                                df_prop = df[(df.p2.str.contains('http://www.wikidata.org/')) & (
+                                    ~df.item.str.contains('/statement/'))]
+                            else:
+                                df_prop = df
                             properties = [
                                 x.replace("/prop/P", "/prop/direct/P").replace("/direct-normalized/", "/direct/") for x
                                 in df_prop.p2.to_list()]
@@ -890,7 +921,7 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
                 value_to_match = filecsv.iloc[row, col]
                 if not isfloat(value_to_match) and not re.match(r"^(\d{4})/(\d{2})/(\d{2})$", value_to_match):
                     try:
-                        WDitem = get_SPARQL_dataframe_item(value_to_match)
+                        WDitem = get_SPARQL_dataframe_item(value_to_match, language)
                         bestname = difflib.get_close_matches(filecsv.iloc[row, 0], WDitem.itemLabel.to_list(), n=2,
                                                              cutoff=0.95)
                         if len(bestname) == 0:
@@ -943,7 +974,7 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
             for ncol in entity_columns or []:
                 try:
                     for column_type in col_type[ncol]:
-                        WDtype = get_SPARQL_dataframe_type(filecsv.iloc[nrow, ncol], column_type)
+                        WDtype = get_SPARQL_dataframe_type(filecsv.iloc[nrow, ncol], column_type, language)
                         item = list(set(WDtype.item.to_list()))
                         if item:
                             cea_list.append(
@@ -958,7 +989,7 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
         if col_type.get(0) and len(nomatch_row) > 0:
             for column_type in col_type.get(0):
                 try:
-                    WDtype = get_SPARQL_dataframe_type2(column_type)
+                    WDtype = get_SPARQL_dataframe_type2(column_type, language)
                     for row in nomatch_row or []:
                         proper_name = difflib.get_close_matches(filecsv.iloc[row, 0], WDtype.itemLabel.to_list(), n=15,
                                                                 cutoff=0.95)
@@ -977,7 +1008,7 @@ def contextual_matching(filecsv, filename='', default_cpa=None, default_cea=None
                         if len(proper_name) > 0:
                             test_list = []
                             for proper in proper_name:
-                                e = get_SPARQL_dataframe(proper, extra='?itemLabel ')
+                                e = get_SPARQL_dataframe(proper, language, extra='?itemLabel ')
                                 if isinstance(e, pd.DataFrame):
                                     test_list.append(e)
                             if len(test_list) > 0:
@@ -1113,7 +1144,7 @@ def postprocessing(cpa_list, cea_list, filelist=None, target_cpa=None, target_ce
     return [bbw_cpa_sub, bbw_cea_sub, bbw_cta_sub]
 
 
-def annotate(filecsv, filename=''):
+def annotate(filecsv, filename='', language=''):
     """
     Parameters
     ----------
@@ -1136,8 +1167,9 @@ def annotate(filecsv, filename=''):
     """
     filename = filename.replace('.csv', '')
     filecsv = preprocessing(filecsv)
-    [cpa, cea, nomatch] = contextual_matching(filecsv, filename, step3=False,
-                                              step4=False, step5=True, step6=True)
+    [cpa, cea, nomatch] = contextual_matching(filecsv, filename, language,
+                                              step3=False, step4=False, step5=True,
+                                              step6=True)
     [cpa_sub, cea_sub, cta_sub] = postprocessing(cpa, cea, [filecsv], gui=True)
     bbwtable = filecsv
     urltable = pd.DataFrame(columns=filecsv.columns)

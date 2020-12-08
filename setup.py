@@ -23,6 +23,7 @@ setup(
 	"requests>=2.23.0",
 	"numpy>=1.18.4",
 	"beautifulsoup4>=4.9.3",
+    "langid>=1.1.6",
     ],
     scripts=['bbw_cli.py','bbw_gui.py','bbw_parallel.sh'],
     packages=find_packages(),
