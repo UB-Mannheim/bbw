@@ -41,7 +41,7 @@ def get_language(string):
     """ https://github.com/IBCNServices/CSV2KG/blob/master/csv2kg/util.py#L15-L19 """
     try:
         return langid.classify(string)[0]
-    except:
+    except Exception:
         return 'en'
 
 
@@ -780,13 +780,13 @@ def preprocessing(filecsv):
     return filecsv
 
 
-def contextual_matching(filecsv, filename='', language='',
+def contextual_matching(filecsv, filename='', language='', semtab = False,
                         default_cpa=None, default_cea=None, default_nomatch=None,
                         step3=False, step4=False, step5=True, step6=True):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
     The lists cpa_list and cea_list with annotations are returned."""
-    semtab = False # if True, a property must have URL with www.wikidata.org
+    # if semtab is True, a property must have URL with www.wikidata.org
     if default_cpa:
         cpa_list = default_cpa
     else:
