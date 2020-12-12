@@ -7,3 +7,4 @@ numpy==1.18.4
 beautifulsoup4==4.9.3
 jupyter-server-proxy>=1.2.0
 nbserverproxy>=0.8.8
+langid==1.1.6
