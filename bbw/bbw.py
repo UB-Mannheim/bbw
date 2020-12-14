@@ -45,6 +45,40 @@ def get_language(string):
         return 'en'
 
 
+def get_datatype(prop, url="https://query.wikidata.org/sparql"):
+    """
+    Parameters
+    ----------
+    prop : str
+        URL of a property in Wikidata or its PID.
+    url : str, optional
+        URL of a SPARQL endpoint. The default is "https://query.wikidata.org/sparql".
+    Returns
+    -------
+    output : str
+        Datatype corresponding to the property in Wikidata.
+        See https://www.mediawiki.org/wiki/Wikibase/DataModel#Datatypes.
+    """
+    try:
+        prop = prop.split('/')[-1]
+        query = """SELECT ?datatype WHERE {
+            ?x wikibase:directClaim wdt:""" + prop + """;
+            wikibase:propertyType ?datatype.}"""
+        r = requests.get(url,
+                         params={'format': 'json', 'query': query},
+                         headers={'User-Agent': random_user_agent()},
+                         timeout=2)
+        results = r.json().get('results').get('bindings')
+        datatype = results[0].get('datatype').get('value')
+        if datatype:
+            output = datatype
+        else:
+            output = ''
+    except Exception:
+        output = ''
+    return output
+
+
 def get_SPARQL_dataframe(name, language, 
                          url="https://query.wikidata.org/sparql", extra=''):
     """
@@ -1226,4 +1260,7 @@ def annotate(filecsv, filename='', language=''):
     labeltable = labeltable.rename(index={'index': 'property'})
     labeltable = labeltable.replace({np.nan: ''})
     labeltable.columns = bbwtable.columns
+    urltable.loc['datatype'] = [get_datatype(prop) for prop in urltable.loc['property',:].to_list()]
+    labeltable.loc['datatype'] = urltable.loc['datatype'].apply(lambda x: x.split('#')[-1] if x else '')
+    bbwtable.loc['datatype'] = '<a target="_blank" href="' + urltable.loc['datatype'] + '">' + labeltable.loc['datatype'] + '</a>'
     return [bbwtable, urltable, labeltable, cpa_sub, cea_sub, cta_sub]
