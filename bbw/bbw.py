@@ -785,8 +785,14 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                         step3=False, step4=False, step5=True, step6=True):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
-    The lists cpa_list and cea_list with annotations are returned."""
-    # if semtab is True, a property must have URL with www.wikidata.org
+    The lists cpa_list and cea_list with annotations are returned.
+    If semtab=True, a property must have URL at www.wikidata.org and col0=1.
+    If semtab=False, a property may have URL at www.w3.org and col0=0.
+    """
+    if semtab:
+        col0 = 1
+    else:
+        col0 = 0
     if default_cpa:
         cpa_list = default_cpa
     else:
@@ -816,7 +822,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
             # for each other column look for a match of the value within the wikidata dataframe
             if isinstance(WDdf, pd.DataFrame):
                 if not WDdf.empty:
-                    for col in range(1, cols):
+                    for col in range(col0, cols):
                         try:
                             df = match(WDdf, filecsv.iloc[row, col])
                             if semtab:
@@ -889,7 +895,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                     bestname = list(set(
                         difflib.get_close_matches(filecsv.iloc[nrow, 0], WDdf.itemLabel.to_list(), n=3, cutoff=0.81)))
                     WD = WDdf[WDdf.itemLabel.isin(bestname)]
-                    for col in range(1, cols):
+                    for col in range(col0, cols):
                         try:
                             df = match(WD, filecsv.iloc[nrow, col])
                             item = list(set(df.item.to_list()))
@@ -1015,10 +1021,13 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                                 WDdf = pd.concat(test_list)
 
                             if isinstance(WDdf, pd.DataFrame):
-                                for col in range(1, cols):
+                                for col in range(col0, cols):
                                     try:
                                         df = match(WDdf, filecsv.iloc[row, col])
-                                        df_prop = df[df.p2.str.contains('http://www.wikidata.org/')]
+                                        if semtab:
+                                            df_prop = df[df.p2.str.contains('http://www.wikidata.org/')]
+                                        else:
+                                            df_prop = df
                                         properties = [
                                             x.replace("/prop/P", "/prop/direct/P").replace("/direct-normalized/",
                                                                                            "/direct/") for x in
