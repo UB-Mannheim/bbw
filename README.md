@@ -100,11 +100,15 @@ If you find bbw useful in your work, a proper reference would be:
   author    = {Renat Shigapov and Philipp Zumstein and Jan Kamlah and Lars Oberl{\"a}nder and J{\"o}rg Mechnich and Irene Schumm},
   title     = {bbw: {M}atching {CSV} to {W}ikidata via {M}eta-lookup},
   booktitle = {SemTab@ISWC 2020},
+  url = {http://ceur-ws.org/Vol-2775/paper2.pdf},
+  volume = {2775},
+  pages = {17-26},
+  publisher = {CEUR-WS.org},
   year = {2020}
 }
 ```
 
-[[preprint](https://drive.google.com/file/d/1b5sdsJfhXGGXP-xNj3xVu3ULH5tV4Nap/view)] [[presentation](https://madoc.bib.uni-mannheim.de/57386/)] [[BERD@BW](https://www.berd-bw.de)]
+[[paper](http://ceur-ws.org/Vol-2775/paper2.pdf)] [[presentation](https://madoc.bib.uni-mannheim.de/57386/)] [[BERD@BW](https://www.berd-bw.de)]
 
 ## SemTab2020
 
