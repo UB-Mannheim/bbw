@@ -18,6 +18,11 @@ import os
 import langid
 
 
+url_query = "https://query.wikidata.org/sparql" # default URL for SPARQL endpoint
+url_front = "https://www.wikidata.org" # default URL for Wikibase frontend
+ptype = "P31" # default property for 'instance of'
+
+
 def get_parallel(a, n):
     """Get input for GNU parallel based on a-list of filenames and n-chunks.
     The a-list is split into n-chunks. Offset and amount are provided."""
@@ -45,7 +50,7 @@ def get_language(string):
         return 'en'
 
 
-def get_datatype(prop, url="https://query.wikidata.org/sparql"):
+def get_datatype(prop, url=url_query):
     """
     Parameters
     ----------
@@ -80,7 +85,7 @@ def get_datatype(prop, url="https://query.wikidata.org/sparql"):
 
 
 def get_SPARQL_dataframe(name, language, 
-                         url="https://query.wikidata.org/sparql", extra=''):
+                         url=url_query, extra='', ptype=ptype):
     """
     Parameters
     ----------
@@ -109,8 +114,8 @@ def get_SPARQL_dataframe(name, language,
     query = "SELECT DISTINCT ?item " + extra + """?itemType ?p1 ?p2 ?value ?valueType ?valueLabel ?psvalueLabel WHERE {
                 ?item ?p1 """ + '"' + name + '"' + "@" + lang + """;
                 ?p2 ?value.""" + subquery + """
-                OPTIONAL { ?item wdt:P31 ?itemType. }
-                OPTIONAL { ?value wdt:P31 ?valueType. }
+                OPTIONAL { ?item wdt:""" + ptype + """ ?itemType. }
+                OPTIONAL { ?value wdt:""" + ptype + """ ?valueType. }
                 OPTIONAL {
                     ?wdproperty wikibase:claim ?p2 ;
                         wikibase:statementProperty ?psproperty .
@@ -147,7 +152,7 @@ def get_SPARQL_dataframe(name, language,
 
 
 def get_SPARQL_dataframe_item(name, language, 
-                              url="https://query.wikidata.org/sparql"):
+                              url=url_query, ptype=ptype):
     """
     Parameters
     ----------
@@ -167,9 +172,9 @@ def get_SPARQL_dataframe_item(name, language,
         lang = get_language(name)
     query = """SELECT REDUCED ?value ?valueType ?p2 ?item ?itemType ?itemLabel WHERE {
                 ?value rdfs:label """ + '"' + name + '"@' + lang + """;
-                wdt:P31 ?valueType.
+                wdt:""" + ptype + """ ?valueType.
                 ?item ?p2 [ ?x """ + '"' + name + '"@' + lang + """].
-                ?item wdt:P31 ?itemType.
+                ?item wdt:""" + ptype + """ ?itemType.
                 ?item rdfs:label ?itemLabel.
                 FILTER((LANG(?itemLabel)) = "en").
             }
@@ -199,7 +204,7 @@ def get_SPARQL_dataframe_item(name, language,
     return output
 
 
-def get_SPARQL_dataframe_prop(prop, value, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_prop(prop, value, url=url_query, ptype=ptype):
     value = [val.replace('"', '\\\"') for val in value]
     subquery = []
     subquery.extend([""" wdt:""" + str(prop) + """ [ ?p """ + '"' + str(value) + '"' + """@en ] ;
@@ -211,11 +216,11 @@ def get_SPARQL_dataframe_prop(prop, value, url="https://query.wikidata.org/sparq
     SELECT REDUCED ?item ?itemType ?itemLabel ?p2 ?value ?valueType ?valueLabel ?psvalueLabel WHERE {
   ?item """ + subquery + """
         ?p2 ?value.
-  ?item wdt:P31 ?itemType;
+  ?item wdt:""" + ptype + """ ?itemType;
         rdfs:label ?itemLabel.
   FILTER (lang(?itemLabel) = "en").
   OPTIONAL {
-  ?value wdt:P31 ?valueType .}
+  ?value wdt:""" + ptype + """ ?valueType .}
   OPTIONAL {?wdproperty wikibase:claim ?p2 ;
                         wikibase:statementProperty ?psproperty .
             ?value ?psproperty ?psvalue .}
@@ -249,7 +254,7 @@ def get_SPARQL_dataframe_prop(prop, value, url="https://query.wikidata.org/sparq
     return output
 
 
-def get_SPARQL_dataframe_type(name, datatype, language, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_type(name, datatype, language, url=url_query, ptype=ptype):
     name = name.replace('"', '\\\"')
     if language:
         lang = language
@@ -257,7 +262,7 @@ def get_SPARQL_dataframe_type(name, datatype, language, url="https://query.wikid
         lang = get_language(name)
     query = """SELECT DISTINCT ?item ?itemLabel WHERE {
         {?item  (rdfs:label|skos:altLabel) """ + '"' + name + '"@' + lang + """.}
-        ?item wdt:P31 wd:""" + datatype + """.
+        ?item wdt:""" + ptype + """ wd:""" + datatype + """.
         SERVICE wikibase:label { bd:serviceParam wikibase:language """ + '"' + lang + '"' + """. }
         }
         LIMIT 10000"""
@@ -285,7 +290,7 @@ def get_SPARQL_dataframe_type(name, datatype, language, url="https://query.wikid
     return output
 
 
-def get_SPARQL_dataframe_type2(datatype, language, url="https://query.wikidata.org/sparql"):
+def get_SPARQL_dataframe_type2(datatype, language, url=url_query, ptype=ptype):
     if datatype=="Q5":
         limit = "LIMIT 350000"
     else:
@@ -297,7 +302,7 @@ def get_SPARQL_dataframe_type2(datatype, language, url="https://query.wikidata.o
     query = """SELECT REDUCED ?itemLabel WHERE {
         hint:Query hint:maxParallel 50 .
         hint:Query hint:chunkSize 1000 .
-        []  wdt:P31 wd:""" + datatype + """;
+        []  wdt:""" + ptype + """ wd:""" + datatype + """;
               (rdfs:label|skos:altLabel) ?itemLabel.
         FILTER (lang(?itemLabel) = """ + '"' + lang + '"' + """).
         }
@@ -350,7 +355,7 @@ def get_openrefine_bestname(name):
     return bestname
 
 
-def get_wikidata_URL(name):
+def get_wikidata_URL(name, url=url_front):
     """
     Parameters
     ----------
@@ -362,7 +367,7 @@ def get_wikidata_URL(name):
         The best suggestion returned by Wikidata API-service.
     """
 
-    url = "https://www.wikidata.org/w/api.php"
+    url = url_front + "/w/api.php"
     params = {"action": "query",
               "srlimit": "1",
               "format": "json",
@@ -380,7 +385,7 @@ def get_wikidata_URL(name):
                 if len(search) > 0:
                     bestname = search[0].get("title")
                     if bestname:
-                        URL = 'http://www.wikidata.org/entity/' + bestname
+                        URL = url_front + '/entity/' + bestname
         if not URL:
             URL = None
     except Exception:
@@ -388,7 +393,7 @@ def get_wikidata_URL(name):
     return URL
 
 
-def get_wikidata_title(url):
+def get_wikidata_title(url, url_front=url_front):
     """
     Parameters
     ----------
@@ -400,7 +405,7 @@ def get_wikidata_title(url):
         Title of a Wikidata page.
     """
     try:
-        url = url.replace('http://www.wikidata.org/prop/direct/', 'http://www.wikidata.org/entity/')
+        url = url.replace(url_front+'/prop/direct/', url_front+'/entity/')
         params = {"action": "wbgetentities",
                   "format": "json",
                   "props": "labels",
@@ -460,7 +465,7 @@ def get_wikimedia2wikidata_title(wikimedia_url):
     return title
 
 
-def get_wikipedia2wikidata_title(wikipedia_title):
+def get_wikipedia2wikidata_title(wikipedia_title, url_front=url_front):
     """
     Parameters
     ----------
@@ -471,7 +476,7 @@ def get_wikipedia2wikidata_title(wikipedia_title):
     bestname : str
         The title of the corresponding entity in Wikidata.
     """
-    url = "https://en.wikipedia.org/w/api.php"
+    url = url_front + "/w/api.php"
     params = {"action": "query",
               "prop": "pageprops",
               "ppprop": "wikibase_item",
@@ -487,7 +492,7 @@ def get_wikipedia2wikidata_title(wikipedia_title):
         else:
             # bestname = [k for k in pages.values()][0].get('title')
             wikidataID = [k for k in pages.values()][0].get('pageprops').get('wikibase_item')
-            bestname = get_title("https://www.wikidata.org/wiki/" + wikidataID).replace(' - Wikidata', '')
+            bestname = get_title(url_front + "/wiki/" + wikidataID).replace(' - Wikidata', '')
     except Exception:
         bestname = None
     return bestname
@@ -580,7 +585,7 @@ def get_searx_bestname(name):
                 if "dict" in url:
                     bestname.append(raw_title.split(' : ')[0].split(' | ')[0])
                 raw_match = difflib.get_close_matches(name, [
-                    raw_title.replace(' ...', '').replace(' …', '').split(' | ')[0].split(" - ")[0].split(' \u2014 ')[
+                    raw_title.replace(' ...', '').replace(' ?', '').split(' | ')[0].split(" - ")[0].split(' \u2014 ')[
                         0].split(' \u2013 ')[0]], n=1, cutoff=0.7)
                 if len(raw_match) == 1:
                     bestname.append(raw_match[0])
@@ -623,7 +628,7 @@ def isfloat(value):
         return False
 
 
-def get_common_class(classes, url="https://query.wikidata.org/sparql"):
+def get_common_class(classes, url=url_query, url_front=url_front):
     """
     Parameters
     ----------
@@ -639,7 +644,7 @@ def get_common_class(classes, url="https://query.wikidata.org/sparql"):
     if not isinstance(classes, list):
         print("Error:", classes, "is not a list of classes. ")
         return
-    classes = [entity.replace('http://www.wikidata.org/entity/', '') for entity in classes]
+    classes = [entity.replace(url_front + '/entity/', '') for entity in classes]
     lengths = ['?len' + entity for entity in classes]
     length = '(' + ' + '.join(lengths) + ' as ?length)'
     subquery = []
@@ -816,7 +821,7 @@ def preprocessing(filecsv):
 
 def contextual_matching(filecsv, filename='', language='', semtab = False,
                         default_cpa=None, default_cea=None, default_nomatch=None,
-                        step3=False, step4=False, step5=True, step6=True):
+                        step3=False, step4=False, step5=True, step6=True, url=url_front):
     """Five-steps contextual matching for an input dataframe filecsv.
     Step 2 is always executed. Steps 3-6 are optional.
     The lists cpa_list and cea_list with annotations are returned.
@@ -860,7 +865,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                         try:
                             df = match(WDdf, filecsv.iloc[row, col])
                             if semtab:
-                                df_prop = df[(df.p2.str.contains('http://www.wikidata.org/')) & (
+                                df_prop = df[(df.p2.str.contains(url)) & (
                                     ~df.item.str.contains('/statement/'))]
                             else:
                                 df_prop = df
@@ -878,7 +883,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                             else:
                                 itemType = []
                             df_value = df[
-                                (~df.value.str.contains('/statement/')) & (df.value.str.contains('wikidata.org'))]
+                                (~df.value.str.contains('/statement/')) & (df.value.str.contains(url))]
                             if not df_value.empty:
                                 value, valueType = list(set(df_value.value.to_list())), list(
                                     set([k for k in df_value.valueType.to_list() if k is not np.nan]))
@@ -938,7 +943,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                             else:
                                 itemType = []
                             df_value = df[
-                                (~df.value.str.contains('/statement/')) & (df.value.str.contains('wikidata.org'))]
+                                (~df.value.str.contains('/statement/')) & (df.value.str.contains(url))]
                             if not df_value.empty:
                                 value, valueType = list(set(df_value.value.to_list())), list(
                                     set([k for k in df_value.valueType.to_list() if k is not np.nan]))
@@ -978,7 +983,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                                 x.replace("/prop/P", "/prop/direct/P").replace("/direct-normalized/", "/direct/") for x
                                 in WD.p2.to_list()]
                             properties = list(set(zip(properties, WD.item.to_list())))
-                            WD = WD[(~WD.value.str.contains('/statement/')) & (WD.value.str.contains('wikidata.org'))]
+                            WD = WD[(~WD.value.str.contains('/statement/')) & (WD.value.str.contains(url))]
                             if not WD.empty:
                                 value, valueType = list(set(WD.value.to_list())), list(
                                     set([k for k in WD.valueType.to_list() if k is not np.nan]))
@@ -1018,7 +1023,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                         item = list(set(WDtype.item.to_list()))
                         if item:
                             cea_list.append(
-                                [filename, nrow, ncol, item, ["http://www.wikidata.org/entity/" + column_type],
+                                [filename, nrow, ncol, item, [url+"/entity/" + column_type],
                                  'Step 5', list(set(WDtype.itemLabel.to_list()))])
                 except Exception:
                     pass
@@ -1059,7 +1064,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                                     try:
                                         df = match(WDdf, filecsv.iloc[row, col])
                                         if semtab:
-                                            df_prop = df[df.p2.str.contains('http://www.wikidata.org/')]
+                                            df_prop = df[df.p2.str.contains(url)]
                                         else:
                                             df_prop = df
                                         properties = [
@@ -1074,7 +1079,7 @@ def contextual_matching(filecsv, filename='', language='', semtab = False,
                                         else:
                                             itemType = []
                                         df_value = df[(~df.value.str.contains('/statement/')) & (
-                                            df.value.str.contains('wikidata.org'))]
+                                            df.value.str.contains(url))]
                                         if not df_value.empty:
                                             value, valueType = list(set(df_value.value.to_list())), list(
                                                 set([k for k in df_value.valueType.to_list() if k is not np.nan]))
