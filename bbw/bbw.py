@@ -19,7 +19,7 @@ import langid
 
 
 url_query = "https://query.wikidata.org/sparql" # default URL for SPARQL endpoint
-url_front = "https://www.wikidata.org" # default URL for Wikibase frontend
+url_front = "http://www.wikidata.org" # default URL for Wikibase frontend
 ptype = "P31" # default property for 'instance of'
 
 
