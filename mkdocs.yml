@@ -1,0 +1,7 @@
+site_name: bbw
+site_url: https://ub-mannheim.github.io/bbw/
+site_description: bbw documentation
+nav:
+    - Home: index.md
+    - Quickstart: quickstart.md
+theme: readthedocs
